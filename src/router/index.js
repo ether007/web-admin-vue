@@ -1,9 +1,7 @@
-import Vue from 'vue'
-import Router from 'vue-router'
 
 import Login from '@/components/Login'
-import Home from '@/components/Home'
 import NotFound from '@/components/404'
+
 import Dashboard from '@/components/Dashboard'
 
 import AdminProfile from '@/components/view-system/admin-profile'
@@ -14,24 +12,16 @@ import Role from '@/components/view-user/Role'
 import Authority from '@/components/view-user/Authority'
 
 import Goods from '@/components/view-order/Goods'
+import Home from '@/components/Home'
 
 
-Vue.use(Router)
-
-let routes = [
-  {
-    path: '/login',
-    component: Login,
-    name: '',
-    hidden: true
-  },
+const permissionRouter = [
   {
     path:'/',
     hidden:true,
     component: Home,
     name:'通用',
     children:[
-      { path: '/404', component: NotFound, name: '404' },
       { path: '/admin/profile', component: AdminProfile, name: '我的信息' },
       { path: '/admin/message', component: AdminMessage, name: '我的消息' }
     ]
@@ -59,19 +49,40 @@ let routes = [
   {
     path: '/',
     component: Home,
-    name: '',
+    name: '数据',
     iconCls: 'fa fa-address-card',
-    leaf: true,//只有一个节点
+    leaf: true,
     children: [
       { path: '/dashboard', component: Dashboard, name: '仪表板' }
     ]
-  }, {
+  }
+]
+
+const routes = [
+  {
+    path: '/login',
+    component: Login,
+    name: '登录',
+    hidden: true
+  },
+  {
+    path: '/',
+    component: Home,
+    hidden: true,
+    children: [
+      { path: '/404', component: NotFound, name: '404' },
+      { path: '/', name: 'default', hidden: true,redirect: { path: '/404' } }
+    ]
+  }
+ , {
     path: '*',
+    name: '40x',
     hidden: true,
     redirect: { path: '/404' }
   }
 ];
 
-export default new Router({
-  routes: routes
-})
+
+export {permissionRouter,routes}
+
+

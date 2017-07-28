@@ -1,0 +1,14 @@
+{
+  "code": 1,
+  "message": "success",
+  "data": [
+    "/",
+    "/admin/profile",
+    "/admin/message",
+    "/user",
+    "/authority",
+    "/role",
+    "/goods",
+    "/dashboard"
+  ]
+}

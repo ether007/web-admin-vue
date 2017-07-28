@@ -13,7 +13,7 @@
       </el-col>
       <el-col :span="4" class="userinfo">
         <el-dropdown trigger="hover">
-          <span class="el-dropdown-link userinfo-inner"><img :src="this.sysUserAvatar"/> {{sysUserName}}</span>
+          <span class="el-dropdown-link userinfo-inner"><img src="../assets/logo.png"/> {{sysUserName}}</span>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item  @click.native="$router.push('/admin/message')">我的消息</el-dropdown-item>
             <el-dropdown-item  @click.native="$router.push('/admin/profile')">设置</el-dropdown-item>
@@ -33,7 +33,7 @@
                  @select="handleselect"
                  unique-opened router :collapse="collapsed">
 
-          <template v-for="(item,index) in $router.options.routes" v-if="!item.hidden">
+          <template v-for="(item,index) in self_routers" v-if="!item.hidden">
 
             <el-submenu :index="index+''" v-if="!item.leaf">
               <template slot="title"><i :class="item.iconCls"></i><span slot="title">{{item.name}}</span></template>
@@ -59,7 +59,7 @@
       <section class="content-container">
         <div class="grid-content bg-purple-light">
           <el-col :span="24" class="breadcrumb-container">
-            <strong class="title">{{$route.name}}</strong>
+
             <el-breadcrumb separator="/" class="breadcrumb-inner">
               <el-breadcrumb-item v-for="item in $route.matched" :key="item.path">
                 {{ item.name }}
@@ -78,24 +78,19 @@
 </template>
 
 <script>
+  import { mapState,mapGetters } from 'vuex'
+  //import {permissionRouter} from '../router'
+
   export default {
     data() {
       return {
         sysName: 'Admin',
         collapsed: false,
         sysUserName: '',
-        sysUserAvatar: '',
-        form: {
-          name: '',
-          region: '',
-          date1: '',
-          date2: '',
-          delivery: false,
-          type: [],
-          resource: '',
-          desc: ''
-        }
+        sysUserAvatar: ''
       }
+    },
+    created:function(){
     },
     methods: {
       onSubmit() {
@@ -134,6 +129,10 @@
         this.sysUserName = user.name || '';
         this.sysUserAvatar = user.avatar || '';
       }
+      console.info();
+    },
+    computed:{
+      ...mapGetters(['self_routers'])
     }
   }
 
@@ -187,10 +186,10 @@
         }
       }
       .logo-width {
-        width: 230px;
+        width: 190px;
       }
       .logo-collapse-width {
-        width: 60px
+        width: 64px
       }
       .tools {
         padding: 0px 23px;
@@ -208,8 +207,8 @@
       bottom: 0px;
       overflow: hidden;
       aside {
-        flex: 0 0 230px;
-        width: 230px;
+        flex: 0 0 190px;
+        width: 190px;
         // position: absolute;
         // top: 0px;
         // bottom: 0px;
@@ -237,8 +236,8 @@
         width: 60px;
       }
       .menu-expanded {
-        flex: 0 0 230px;
-        width: 230px;
+        flex: 0 0 190px;
+        width: 190px;
       }
       .content-container {
         // background: #f1f2f7;
@@ -258,7 +257,7 @@
             color: #475669;
           }
           .breadcrumb-inner {
-            float: right;
+            float: left;
           }
         }
         .content-wrapper {
