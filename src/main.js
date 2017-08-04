@@ -14,10 +14,9 @@ import {routes, permissionRouter} from './router'
 Vue.config.productionTip = false
 
 
-import 'font-awesome/css/font-awesome.min.css'
-
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-default/index.css'
+import 'font-awesome/css/font-awesome.min.css'
 
 Vue.use(ElementUI)
 Vue.use(Vuex)
@@ -25,45 +24,35 @@ Vue.use(Router)
 
 
 const router = new Router({
-  routes: routes
+  routes: routes.concat(permissionRouter)
 })
 
-router.addRoutes(permissionRouter)
-
 router.beforeEach((to, from, next) => {
-
-  let path = to.path;
-  if (path == '/login') {
-    sessionStorage.removeItem('user');
-    sessionStorage.removeItem('permission');
-    store.commit('FetchData', false);
-    return next()
+  let user = store.getters.user;
+  let permission = store.getters.permission;
+  //生成路由导航
+  if (store.getters.self_routers == null && user!=null && permission!=null) {
+    store.dispatch('GenerateRoutes');
   }
-
-  let user = JSON.parse(sessionStorage.getItem('user'));
-  let permission = JSON.parse(sessionStorage.getItem('permission'));
-
-  if (!user || !permission) {
-    return next({path: '/login'})
-  }
-  if (!store.getters.fetchData) {
-    //获取用户权限
-    store.dispatch('fetchUserData').then((permission) => {
-      //获取路由生成导航
-      sessionStorage.setItem('permission', JSON.stringify(permission));
-      store.dispatch('GenerateRoutes').then((data) => {
-        //router.addRoutes(data)
-        //next();
-      });
-    });
-  }
-  //权限检查
-  if ((permission.some(ipath => {
-      return ipath === path;
-    }))) {
-    next();
+  if (to.matched.some(record => !!!record.meta.anonymous)) {
+    //不能匿名访问
+    store.dispatch('isLogin').then(data => {
+      //判断是否登录
+      if (data.code == 1 && data.data.islogin) {
+        //前端判断是否有权限
+        if (store.getters.permission.some(ipath => {
+          return ipath === to.path;
+        })) {
+          next();
+        } else {
+          next({path: '/403'});
+        }
+      } else {
+        next({path: '/login'})
+      }
+    })
   } else {
-    next({path: '/404'});
+    next();
   }
 
 })

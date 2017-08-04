@@ -2,13 +2,19 @@
   "code": 1,
   "message": "success",
   "data": [
-    "/",
     "/admin/profile",
     "/admin/message",
-    "/user",
-    "/authority",
-    "/role",
-    "/goods",
+    "/user/list",
+    "/user/add",
+    "/user/update",
+    "/user/delete",
+    "/user/authority",
+    "/user/role",
+    "/user/role/add",
+    "/user/role/update",
+    "/user/role/delete",
+    "/good/list",
+    "/good/tree",
     "/dashboard"
   ]
 }

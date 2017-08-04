@@ -1,7 +1,7 @@
 <template>
   <section>
     <!--工具条-->
-    <el-col :span="24" class="toolbar" style="padding-bottom: 0px;">
+    <el-col :span="24" class="toolbar" style="">
       <el-form :inline="true" :model="formInline" class="demo-form-inline">
         <el-form-item label="用户名">
           <el-input v-model="formInline.user" placeholder="用户名"></el-input>
@@ -11,13 +11,14 @@
             <el-option label="上海" value="shanghai"></el-option>
             <el-option label="北京" value="beijing"></el-option>
           </el-select>
-        </el-form-item><el-form-item>
-        <el-button type="primary" @click="onSubmit">查询</el-button>
-      </el-form-item>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="onSubmit">查询</el-button>
+          <el-button type="primary" @click="onShowAdd">新增</el-button>
+        </el-form-item>
       </el-form>
     </el-col>
     <el-col :span="24">
-
       <el-table
         ref="multipleTable"
         :data="tableData"
@@ -31,11 +32,6 @@
           width="55">
         </el-table-column>
 
-        <el-table-column
-          label="日期"
-          width="120">
-          <template scope="scope">{{ scope.row.date }}</template>
-        </el-table-column>
 
         <el-table-column
           prop="name"
@@ -44,9 +40,27 @@
         </el-table-column>
 
         <el-table-column
-          prop="address"
-          label="地址"
+          prop="status"
+          label="状态"
+          width="90">
+          <template scope="scope">
+            <el-tag type="success" v-if="scope.row.status==1">正常</el-tag>
+            <el-tag type="gray" v-if="scope.row.status==0">禁用</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="注册日期"
+          width="120">
+          <template scope="scope">{{ scope.row.date }}</template>
+        </el-table-column>
+
+        <el-table-column
+          prop="role"
+          label="角色"
           show-overflow-tooltip>
+          <template scope="scope">
+            <span v-for="p in scope.row.role" :key="p">{{p}},</span>
+          </template>
         </el-table-column>
 
         <el-table-column
@@ -54,80 +68,112 @@
           label="操作"
           width="100">
           <template scope="scope">
-            <el-button @click="handleClick" type="text" size="small">查看</el-button>
-            <el-button type="text" size="small">编辑</el-button>
+            <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
+            <el-button @click="handleClick(scope.row)" type="text" size="small">编辑</el-button>
           </template>
         </el-table-column>
 
       </el-table>
-      <div style="margin-top: 20px">
-        <el-button @click="toggleSelection([tableData[1], tableData[2]])">切换第二、第三行的选中状态</el-button>
-        <el-button @click="toggleSelection()">取消选择</el-button>
-      </div>
+      <el-row>
+        <el-col :span="24" style="margin-top: 8px;text-align: center">
+          <div class="block">
+            <el-pagination
+              @current-change="handleCurrentChange"
+              :current-page.sync="currentPage"
+              :page-size="20"
+              layout="total, prev, pager, next"
+              :total="rowCount">
+            </el-pagination>
+          </div>
+        </el-col>
+      </el-row>
+
     </el-col>
+
+    <!-- Form -->
+    <el-dialog title="编辑用户" :visible.sync="dialogFormVisible">
+      <el-form :model="formInline">
+        <el-form-item label="用户名" :label-width="formLabelWidth">
+          <el-input v-model="formInline.user" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="活动区域" :label-width="formLabelWidth">
+          <el-select v-model="formInline.region" placeholder="城市">
+            <el-option label="上海" value="shanghai"></el-option>
+            <el-option label="北京" value="beijing"></el-option>
+          </el-select>
+        </el-form-item>
+      </el-form>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="dialogFormVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+      </div>
+    </el-dialog>
+    <!-- end Form -->
   </section>
 </template>
 
 <script>
   export default {
+
     data() {
       return {
+        formLabelWidth: "100px",
+        dialogFormVisible: false,
+        currentPage: 5,
+        pageSize: 20,
+        rowCount: 1009,
         formInline: {
           user: '',
           region: ''
         },
-        tableData: [{
-          date: '2016-05-03',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-02',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-04',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-01',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-08',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-06',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }, {
-          date: '2016-05-07',
-          name: '王小虎',
-          address: '上海市普陀区金沙江路 1518 弄'
-        }],
+        tableData: [],
         multipleSelection: []
       }
     },
+    mounted: function () {
 
+      this.tableData = [{
+        id: 1,
+        name: '王小虎',
+        date: '2016-05-03',
+        status: 1,
+        role: ['管理员', '运维', '产品']
+      }, {
+        id: 2,
+        date: '2016-05-02',
+        name: '王大虎',
+        status: 1,
+        role: ['管理员', '运维', '产品']
+      }]
+
+    },
     methods: {
-      handleClick(){
-        console.info('look look');
+
+      handleCurrentChange(val) {
+        console.log(`当前页: ${val}`);
+      },
+      handleClick(row) {
+        console.info('look look', row);
       },
       onSubmit() {
+        this.rowCount += 100;
         console.log('submit!');
       },
-      toggleSelection(rows) {
-        if (rows) {
-          rows.forEach(row => {
-            this.$refs.multipleTable.toggleRowSelection(row);
-          });
-        } else {
-          this.$refs.multipleTable.clearSelection();
-        }
-      },
       handleSelectionChange(val) {
+        console.info(val);
         this.multipleSelection = val;
+      },
+      onShowAdd() {
+        this.tableData.push({
+          id: 99,
+          date: '2016-05-02',
+          name: '孙漂亮',
+          status: 1,
+          role: ['管理员', '运维', '产品','技术','测试','销售']
+        });
+        this.dialogFormVisible = true;
       }
+
     }
   }
 </script>

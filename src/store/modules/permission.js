@@ -1,16 +1,30 @@
-import store from "../index";
+import * as types from '../mutation-types'
+
 import {permissionRouter} from '../../router'
 
-const SET_ROUTERS = "SET_ROUTERS"
-const SET_PERMISSION = "SET_PERMISSION"
+function clone(obj) {
+  if (typeof (obj) != 'object'){
+    return obj;
+  }
+  var re = {};
+  if(obj!=null &&obj.constructor == Array){
+    re = [];
+  }
+  for (var i in obj) {
+    re[i] = obj==null?null:clone(obj[i]);
+  }
+  return re;
+}
+
 
 function filterRouter(permissionRouter, permission) {
-
-  let accessedRouters = permissionRouter.filter(router => {
+  //这里会改变permissionRouter
+  let permissionRouterLocal = clone(permissionRouter);
+  let accessedRouters = permissionRouterLocal.filter(router => {
     if (!router.children) {
       return (permission.some(path => {
-          return path === router.path;
-        }));
+        return path === router.path;
+      }));
     }
     if (router.children) {
       router.children = filterRouter(router.children, permission)
@@ -24,24 +38,27 @@ function filterRouter(permissionRouter, permission) {
 
 }
 
+
 const Permission = {
   state: {
-    routers: [],
+    routers: null
   },
   mutations: {
-    [SET_ROUTERS](state, routes) {
+    [types.SET_ROUTERS](state, routes) {
       state.routers = routes
     }
   },
   actions: {
-    GenerateRoutes({commit}) {
+    GenerateRoutes({commit, rootGetters}) {
       return new Promise((resolve, reject) => {
-        let permission = store.getters.permission;
-        let rs = filterRouter(permissionRouter, permission);
-        if(rs && rs.length>0 ){
-          commit(SET_ROUTERS, rs);
+        let permission = rootGetters.permission;
+        let user = rootGetters.user;
+        //系统管理员则显示所有
+        let rs = user.issys ? permissionRouter : filterRouter(permissionRouter.slice(0), permission);
+        if (rs && rs.length > 0) {
+          commit(types.SET_ROUTERS, rs);
           resolve(rs);
-        }else{
+        } else {
           reject('never permission')
         }
       });

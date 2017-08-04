@@ -39,28 +39,21 @@
       };
     },
     created:function(){
-      sessionStorage.removeItem('user');
     },
     methods: {
       handleSubmit(ev) {
-        let _this = this;
+
         this.$refs.ruleForm.validate((valid) => {
           if (valid) {
             this.logining = true;
             var loginParams = { username: this.ruleForm.account, password: this.ruleForm.checkPass , remember: this.ruleForm.remember};
-            requestLogin(loginParams).then(response => {
-              let data = response.data;
-              if(data.code==1){
-                let user=data.data;
-                sessionStorage.setItem('user', JSON.stringify(user));
-                this.$router.push({ path: '/user' });
-              }else{
-                this.$message.error(data.message);
-              }
-            }).catch(error => {
-               this.$message.error('网络错误',error);
-               this.logining = false;
-               console.info(error);
+            this.$store.dispatch('loginUser',loginParams).then(() => {
+              this.$store.dispatch('GenerateRoutes').then(()=>{
+                this.$router.push({ path: '/index' });
+              });
+            }).catch(err => {
+              this.logining = false;
+              this.$message.error(err); //登录失败提示错误
             });
           } else {
             console.log('error submit!!');

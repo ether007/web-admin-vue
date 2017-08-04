@@ -27,6 +27,9 @@
     top: 0px;
     bottom: 0px;
     width: 100%;
+    section{
+      padding-top: 8px;
+    }
   }
 
   .el-submenu [class^=fa] {

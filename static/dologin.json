@@ -6,6 +6,22 @@
      "username": "admin",
      "password": "123456",
      "avatar": "./assets/logo.png",
-     "name": "xiao"
+     "name": "xiao",
+     "permission":[
+       "/admin/profile",
+       "/admin/message",
+       "/user/list",
+       "/user/add",
+       "/user/update",
+       "/user/delete",
+       "/user/authority",
+       "/user/role",
+       "/user/role/add",
+       "/user/role/update",
+       "/user/role/delete",
+       "/good/list",
+       "/good/tree",
+       "/dashboard"
+     ]
    }
 }

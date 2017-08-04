@@ -4,7 +4,7 @@
 
     <el-col :span="24" class="header">
       <el-col :span="10" class="logo" :class="collapsed?'logo-collapse-width':'logo-width'">
-        {{collapsed ? '' : sysName}}
+        {{collapsed ? '' : 'Admin'}}
       </el-col>
       <el-col :span="10">
         <div class="tools" @click.prevent="collapse">
@@ -13,10 +13,11 @@
       </el-col>
       <el-col :span="4" class="userinfo">
         <el-dropdown trigger="hover">
-          <span class="el-dropdown-link userinfo-inner"><img src="../assets/logo.png"/> {{sysUserName}}</span>
+          <span class="el-dropdown-link userinfo-inner">
+            <img src="../assets/logo.png"/> {{sysName}}</span>
           <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item  @click.native="$router.push('/admin/message')">我的消息</el-dropdown-item>
-            <el-dropdown-item  @click.native="$router.push('/admin/profile')">设置</el-dropdown-item>
+            <el-dropdown-item @click.native="$router.push('/admin/message')">我的消息</el-dropdown-item>
+            <el-dropdown-item @click.native="$router.push('/admin/profile')">设置</el-dropdown-item>
             <el-dropdown-item divided @click.native="logout">退出登录</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
@@ -43,7 +44,7 @@
               </el-menu-item>
             </el-submenu>
 
-            <el-menu-item v-if="item.leaf&&item.children.length>0" :index="item.children[0].path">
+            <el-menu-item v-if="item.leaf&&item.children.length>=0" :index="item.children[0].path">
               <i :class="item.iconCls"></i><span slot="title">{{item.children[0].name}}</span>
             </el-menu-item>
 
@@ -78,7 +79,7 @@
 </template>
 
 <script>
-  import { mapState,mapGetters } from 'vuex'
+  import {mapState, mapGetters} from 'vuex'
   //import {permissionRouter} from '../router'
 
   export default {
@@ -86,11 +87,9 @@
       return {
         sysName: 'Admin',
         collapsed: false,
-        sysUserName: '',
-        sysUserAvatar: ''
       }
     },
-    created:function(){
+    created: function () {
     },
     methods: {
       onSubmit() {
@@ -103,7 +102,7 @@
         console.log('handleclose');
       },
       handleselect: function (a, b) {
-
+        console.log('handleclose');
       },
       //退出登录
       logout: function () {
@@ -111,10 +110,11 @@
         this.$confirm('确认退出吗?', '提示', {
           type: 'warning'
         }).then(() => {
-          sessionStorage.removeItem('user');
-          _this.$router.push('/login');
-        }).catch(() => {
-
+          this.$store.dispatch('loginOut').then(data => {
+            _this.$router.push('/login');
+          })
+        }).catch((error) => {
+          console.log(error);
         });
       },
       //折叠导航栏
@@ -123,16 +123,12 @@
       }
     },
     mounted() {
-      var user = sessionStorage.getItem('user');
-      if (user) {
-        user = JSON.parse(user);
-        this.sysUserName = user.name || '';
-        this.sysUserAvatar = user.avatar || '';
+      if (this.user) {
+        this.sysName = this.user.username || '';
       }
-      console.info();
     },
-    computed:{
-      ...mapGetters(['self_routers'])
+    computed: {
+      ...mapGetters(['self_routers', 'user'])
     }
   }
 
