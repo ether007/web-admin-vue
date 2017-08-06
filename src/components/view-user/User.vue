@@ -2,12 +2,12 @@
   <section>
     <!--工具条-->
     <el-col :span="24" class="toolbar" style="">
-      <el-form :inline="true" :model="formInline" class="demo-form-inline">
+      <el-form :inline="true" :model="form" class="demo-form-inline">
         <el-form-item label="用户名">
-          <el-input v-model="formInline.user" placeholder="用户名"></el-input>
+          <el-input v-model="form.user" placeholder="用户名"></el-input>
         </el-form-item>
         <el-form-item label="城市">
-          <el-select v-model="formInline.region" placeholder="城市">
+          <el-select v-model="form.region" placeholder="城市">
             <el-option label="上海" value="shanghai"></el-option>
             <el-option label="北京" value="beijing"></el-option>
           </el-select>
@@ -68,8 +68,8 @@
           label="操作"
           width="100">
           <template scope="scope">
-            <el-button @click="handleClick(scope.row)" type="text" size="small">查看</el-button>
             <el-button @click="handleClick(scope.row)" type="text" size="small">编辑</el-button>
+            <el-button @click="handleClick(scope.row)" type="text" size="small">删除</el-button>
           </template>
         </el-table-column>
 
@@ -92,12 +92,12 @@
 
     <!-- Form -->
     <el-dialog title="编辑用户" :visible.sync="dialogFormVisible">
-      <el-form :model="formInline">
+      <el-form :model="form">
         <el-form-item label="用户名" :label-width="formLabelWidth">
-          <el-input v-model="formInline.user" auto-complete="off"></el-input>
+          <el-input v-model="form.user" auto-complete="off"></el-input>
         </el-form-item>
         <el-form-item label="活动区域" :label-width="formLabelWidth">
-          <el-select v-model="formInline.region" placeholder="城市">
+          <el-select v-model="form.region" placeholder="城市">
             <el-option label="上海" value="shanghai"></el-option>
             <el-option label="北京" value="beijing"></el-option>
           </el-select>
@@ -122,7 +122,7 @@
         currentPage: 5,
         pageSize: 20,
         rowCount: 1009,
-        formInline: {
+        form: {
           user: '',
           region: ''
         },
@@ -131,24 +131,8 @@
       }
     },
     mounted: function () {
-
-      this.tableData = [{
-        id: 1,
-        name: '王小虎',
-        date: '2016-05-03',
-        status: 1,
-        role: ['管理员', '运维', '产品']
-      }, {
-        id: 2,
-        date: '2016-05-02',
-        name: '王大虎',
-        status: 1,
-        role: ['管理员', '运维', '产品']
-      }]
-
     },
     methods: {
-
       handleCurrentChange(val) {
         console.log(`当前页: ${val}`);
       },

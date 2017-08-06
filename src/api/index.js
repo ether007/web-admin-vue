@@ -13,6 +13,7 @@ axios.interceptors.request.use(function (config) {
 
 // 响应拦截器
 axios.interceptors.response.use(function (response) {
+  if(response.data){}
   return response;
 }, function (error) {
  return Promise.reject(error);
@@ -27,6 +28,7 @@ function usp(params){
   return param;
 }
 
+//登录系列
 export const isLogin = params => {
   return axios.post('/admin/islogin', usp(params))
 };
@@ -42,3 +44,28 @@ export const requestPermission = ()=>{
 export const requestloginOut = () => {
   return axios.post('/admin/dologinOut')
 };
+
+//角色管理
+export const requestRoleList=(params)=>{
+  return axios.post('admin/role/list', usp(params))
+}
+
+export const requestRoleSave=(params)=>{
+  return axios.post('admin/role/save', usp(params))
+}
+export const requestRoleDelete=(params)=>{
+  return axios.post('admin/role/delete', usp(params))
+}
+
+//用户管理
+export const requestUserList=(params)=>{
+  return axios.post('admin/user/list', usp(params))
+}
+
+export const requestSaveUser=(params)=>{
+  return axios.post('admin/user/save', usp(params))
+}
+
+export const requestDeleteUser=(params)=>{
+  return axios.post('admin/user/delete', usp(params))
+}

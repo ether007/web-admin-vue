@@ -31,7 +31,7 @@ router.beforeEach((to, from, next) => {
   let user = store.getters.user;
   let permission = store.getters.permission;
   //生成路由导航
-  if (store.getters.self_routers == null && user!=null && permission!=null) {
+  if (store.getters.self_routers == null && user != null && permission != null) {
     store.dispatch('GenerateRoutes');
   }
   if (to.matched.some(record => !!!record.meta.anonymous)) {
@@ -40,12 +40,13 @@ router.beforeEach((to, from, next) => {
       //判断是否登录
       if (data.code == 1 && data.data.islogin) {
         //前端判断是否有权限
-        if (store.getters.permission.some(ipath => {
-          return ipath === to.path;
-        })) {
+        let ps = store.getters.permission;
+        if (ps && ps.some(ipath => {
+            return ipath === to.path;
+          })) {
           next();
         } else {
-          next({path: '/403'});
+          next({path: '/login'});
         }
       } else {
         next({path: '/login'})

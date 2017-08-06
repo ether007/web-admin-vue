@@ -67,6 +67,12 @@ const permissionRouter = [
 
 const routes = [
   {
+    path: '/',
+    name: 'index',
+    hidden: true,
+    redirect: {path: '/index'}
+  },
+  {
     path: '/login',
     component: Login,
     name: '登录',

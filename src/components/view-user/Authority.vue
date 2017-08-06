@@ -115,6 +115,7 @@
     },
     mounted: function () {
       this.treeData = permissionRouter;
+
     },
     watch: {
       filterText(val) {

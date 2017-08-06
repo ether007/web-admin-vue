@@ -28,7 +28,7 @@
 
 
         <el-table-column
-          prop="name"
+          prop="roleName"
           label="角色名"
           width="120">
         </el-table-column>
@@ -44,11 +44,11 @@
         </el-table-column>
 
         <el-table-column
-          prop="permission"
+          prop="authorities"
           label="权限"
           show-overflow-tooltip>
           <template scope="scope">
-            <span v-for="p in scope.row.permission" :key="p.path">{{p.name}},</span>
+            <span v-for="p in scope.row.authorities" :key="p.path">{{p.name}},</span>
           </template>
         </el-table-column>
 
@@ -81,14 +81,14 @@
     <el-dialog title="编辑角色" :visible.sync="dialogFormVisible">
       <el-form :model="form">
         <el-form-item label="角色名" :label-width="formLabelWidth">
-          <el-input v-model="form.name" auto-complete="off"></el-input>
+          <el-input v-model="form.roleName" auto-complete="off"></el-input>
         </el-form-item>
         <el-form-item label="状态" :label-width="formLabelWidth">
           <el-radio class="radio" v-model="form.status" :label="1">激活</el-radio>
           <el-radio class="radio" v-model="form.status" :label="0">禁用</el-radio>
         </el-form-item>
         <el-form-item label="角色" :label-width="formLabelWidth">
-          <multiselect v-model="form.permission" :options="permissionOptions"
+          <multiselect v-model="form.authorities" :options="permissionOptions"
                        :multiple="true" :close-on-select="false"
                        :clear-on-select="false" :hide-selected="true"
                        :preserve-search="true" placeholder="选择权限"
@@ -111,7 +111,8 @@
 
 <script>
   import Multiselect from 'vue-multiselect'
-
+  import {requestRoleList,requestRoleSave,requestRoleDelete} from '../../api'
+  import {deepClone} from '../../utils'
   export default {
     components: {Multiselect},
     data() {
@@ -119,23 +120,33 @@
         formLabelWidth: "80px",
         dialogFormVisible: false,
         currentPage: 1,
-        rowCount: 200,
+        rowCount: 0,
         permissionOptions: [],
         multipleSelection: [],
         form: {
           id: -1,
-          name: '',
+          roleName: '',
           status: 1,
           permission: []
         },
         dataRoles: [
-          {id: 1, name: '管理员', status: 1, permission: [{path: '/user/list',name: '用户列表'}, {path: '/user/add',name: '添加用户'}]},
-          {id: 2, name: '产品', status: 0, permission: [{path: '/user/delete',name: '删除用户'}, {path: '/user/add',name: '添加用户'}]},
-          {id: 3, name: '技术', status: 0, permission: []},
+          { "id": 2, "roleName": "管理员", "status": 1, "gmt_create": 1501717329000,
+            "gmt_modified": null, "authorities": [{ "path": "/book/add", "name": "书籍添加", "status": 1, "gmt_create": 1501717330000, "gmt_modified": null, "authority": "/book/add" }, { "path": "/book/list", "name": "书籍列表", "status": 1, "gmt_create": 1501717330000, "gmt_modified": null, "authority": "/book/list" }] }
         ]
       }
     },
+    mounted:function(){
+         this.fetchData();
+    },
     methods: {
+      fetchData() {
+        requestRoleList().then(data=>{
+          let d = data.data.data;
+          this.dataRoles = d.content;
+          this.currentPage = d.number;
+          this.rowCount = d.totalElements;
+        })
+      },
       handleCurrentChange(val) {
         console.log(`当前页: ${val}`);
       },
@@ -143,14 +154,28 @@
         this.multipleSelection = val;
       },
       onSubmit: function () {
-        console.info('show submit',this.form);
+       let  authorities = this.form.authorities;
+       let arr = null;
+        if(authorities && authorities.length>0){
+          arr = [];
+          for(let a of authorities){
+            arr.push({path:a.path,name:a.name,status:a.status})
+          }
+        }
+        let param = deepClone(this.form);
+        console.info(2,this.form)
+        param.authorities = JSON.stringify(arr);
+        requestRoleSave(param).then(data=>{
+          this.dialogFormVisible = false;
+          this.fetchData();
+        })
       },
       onShowAdd: function () {
         this.form = {
           id: -1,
-          name: '',
+          roleName: '',
           status: 1,
-          permission: []
+          authorities: []
         }
         this.dialogFormVisible = true;
         this.permissionOptions = this.$store.getters.leafPermission
@@ -158,15 +183,19 @@
       onShowUpdate: function (row) {
         this.form = {
           id: row.id,
-          name: row.name,
+          roleName: row.roleName,
           status: row.status,
-          permission: row.permission
+          authorities: row.authorities
         }
         this.dialogFormVisible = true;
         this.permissionOptions = this.$store.getters.leafPermission
       },
       handleDeleteClick: function(row){
         console.info('del',row.id);
+        requestRoleDelete({id:row.id}).then(data=>{
+         alert(data.data.message);
+         this.fetchData();
+        })
       }
     }
   }
