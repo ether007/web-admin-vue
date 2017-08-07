@@ -13,7 +13,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="onSubmit">查询</el-button>
+          <el-button type="primary" @click="fetchData">查询</el-button>
           <el-button type="primary" @click="onShowAdd">新增</el-button>
         </el-form-item>
       </el-form>
@@ -34,7 +34,12 @@
 
 
         <el-table-column
-          prop="name"
+          prop="userName"
+          label="姓名"
+          width="120">
+        </el-table-column>
+        <el-table-column
+          prop="userAccount"
           label="姓名"
           width="120">
         </el-table-column>
@@ -50,8 +55,8 @@
         </el-table-column>
         <el-table-column
           label="注册日期"
-          width="120">
-          <template scope="scope">{{ scope.row.date }}</template>
+          width="180">
+          <template scope="scope">{{ parseTime(scope.row.gmt_create) }}</template>
         </el-table-column>
 
         <el-table-column
@@ -59,7 +64,8 @@
           label="角色"
           show-overflow-tooltip>
           <template scope="scope">
-            <span v-for="p in scope.row.role" :key="p">{{p}},</span>
+            <span v-if="scope.row.issys==1">系统管理员</span>
+            <span v-for="p in scope.row.roles" :key="p.id">{{p.roleName}},</span>
           </template>
         </el-table-column>
 
@@ -94,18 +100,35 @@
     <el-dialog title="编辑用户" :visible.sync="dialogFormVisible">
       <el-form :model="form">
         <el-form-item label="用户名" :label-width="formLabelWidth">
-          <el-input v-model="form.user" auto-complete="off"></el-input>
+          <el-input v-model="form.userName" auto-complete="off"></el-input>
         </el-form-item>
-        <el-form-item label="活动区域" :label-width="formLabelWidth">
-          <el-select v-model="form.region" placeholder="城市">
-            <el-option label="上海" value="shanghai"></el-option>
-            <el-option label="北京" value="beijing"></el-option>
-          </el-select>
+
+        <el-form-item label="账号" :label-width="formLabelWidth">
+          <el-input v-model="form.userAccount" auto-complete="off"></el-input>
         </el-form-item>
+
+        <el-form-item label="密码" :label-width="formLabelWidth">
+          <el-input v-model="form.password" auto-complete="off"></el-input>
+        </el-form-item>
+
+        <el-form-item label="角色" :label-width="formLabelWidth">
+          <multiselect v-model="form.roles" :options="roleOptions"
+                       :multiple="true" :close-on-select="false"
+                       :clear-on-select="false" :hide-selected="true"
+                       :preserve-search="true" placeholder="选择权限"
+                       label="roleName" track-by="id">
+            <template slot="tag" scope="props">
+              <span class="custom__tag"><span>{{ props.option.roleName }}</span>
+                <span class="custom__remove" @click="props.remove(props.option)">❌</span>
+              </span>
+            </template>
+          </multiselect>
+        </el-form-item>
+
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">取 消</el-button>
-        <el-button type="primary" @click="dialogFormVisible = false">确 定</el-button>
+        <el-button type="primary" @click="onSubmit">确 定</el-button>
       </div>
     </el-dialog>
     <!-- end Form -->
@@ -113,26 +136,46 @@
 </template>
 
 <script>
+  import Multiselect from 'vue-multiselect'
+  import {requestUserList,requestRoleList} from '../../api'
+  import {parseTime} from '../../utils'
   export default {
-
+    components: {Multiselect},
     data() {
       return {
+        roleOptions:[],
         formLabelWidth: "100px",
         dialogFormVisible: false,
         currentPage: 5,
         pageSize: 20,
         rowCount: 1009,
         form: {
-          user: '',
-          region: ''
+          id:-1,
+          userName: '',
+          roles:[],
+          password:'',
+          userAccount:''
         },
         tableData: [],
         multipleSelection: []
       }
     },
     mounted: function () {
+      this.fetchData()
     },
     methods: {
+      parseTime(date){
+        return parseTime(date)
+      },
+      fetchData(){
+        requestUserList().then(data=>{
+         this.tableData = data.data.data.content
+        });
+        requestRoleList().then(data=>{
+          let d = data.data.data;
+          this.roleOptions = d.content;
+        })
+      },
       handleCurrentChange(val) {
         console.log(`当前页: ${val}`);
       },
@@ -140,24 +183,16 @@
         console.info('look look', row);
       },
       onSubmit() {
-        this.rowCount += 100;
-        console.log('submit!');
+        console.log('submit!',this.form);
       },
       handleSelectionChange(val) {
-        console.info(val);
         this.multipleSelection = val;
       },
       onShowAdd() {
-        this.tableData.push({
-          id: 99,
-          date: '2016-05-02',
-          name: '孙漂亮',
-          status: 1,
-          role: ['管理员', '运维', '产品','技术','测试','销售']
-        });
         this.dialogFormVisible = true;
       }
 
     }
   }
 </script>
+<style src="vue-multiselect/dist/vue-multiselect.min.css"></style>

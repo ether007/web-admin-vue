@@ -136,7 +136,7 @@
       }
     },
     mounted:function(){
-         this.fetchData();
+      this.fetchData();
     },
     methods: {
       fetchData() {
